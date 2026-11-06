@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each player's characters, backups and secret DM rolls: only that player.
+    match /data/users/{uid}/{rest=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // Display names, so the party sees who rolled.
+    match /profiles/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+    // Taverns (shared rolls, maps, initiative): any signed-in player.
+    match /tables/{rest=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
